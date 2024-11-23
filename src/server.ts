@@ -18,23 +18,47 @@ app.get('/health', (req, res) => {
 
 app.post('/posicionarNavio', (req, res) => {
   const { playerId, inicio, comprimento, direcao } = req.body;
-  console.log("Posicionar navio", playerId, inicio, comprimento, direcao);
-  const data = game.posicionarNavio(playerId, inicio, comprimento, direcao as Direcao);
-  const {sucesso, coordenadas, tabuleiro} = data;
-  console.log("Sucesso", sucesso);
-  res.json({sucesso, coordenadas, tabuleiro});
+  console.log('Posicionar navio', playerId, inicio, comprimento, direcao);
+  const data = game.posicionarNavio(
+    playerId,
+    inicio,
+    comprimento,
+    direcao as Direcao,
+  );
+  const { sucesso, coordenadas, tabuleiro, mensagem } = data;
+  console.log('Sucesso', sucesso);
+  res.json({ sucesso, coordenadas, tabuleiro, mensagem });
 });
 
 app.post('/attack', (req, res) => {
   const { playerId, coordinates } = req.body;
-  game.atacar(playerId, coordinates);
-  res.json({ sucesso: true });
+  const resultadoAtaque = game.atacar(playerId, coordinates);
+  const { sucesso, coordenada, tabuleiro, mensagem } = resultadoAtaque;
+  res.json({ sucesso, coordenada, tabuleiro, mensagem });
 });
 
 app.get('/getTabuleiro/:playerId', (req, res) => {
   const { playerId } = req.params;
   const tabuleiro = game.getTabuleiro(Number(playerId));
   res.json({ tabuleiro });
+});
+
+app.get('/todosNaviosPosicionados', (req, res) => {
+  const todosPosicionados = game.todosNaviosPosicionados();
+  res.json({ todosPosicionados });
+});
+
+app.get('/naviosPorJogador/:playerId', (req, res) => {
+  const { playerId } = req.params;
+  const todosNavisPosicionados = game.naviosPosicionadosPorJogador(
+    Number(playerId),
+  );
+  res.json({ todosNavisPosicionados });
+});
+
+app.get('/fase', (req, res) => {
+  const fase = game.getFase();
+  res.json({ fase });
 });
 
 app.listen(port, () => {
