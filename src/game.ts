@@ -1,211 +1,224 @@
-import { Tabuleiro, type Coordenada, type Direcao } from './board';
+import { TabuleiroPosicionamento } from './board-posicionamento';
+import { TabuleiroAtaque } from './board-ataque';
+import type { Coordenada, Direcao } from './types';
+import { Fase } from './types';
 
-enum Fase {
-  Posicionamento = 'Posicionamento',
-  Ataque = 'Ataque',
-  FimDeJogo = 'FimDeJogo',
+// deixar parametro como 0 ou 1
+// controlar a vez de quem jogar
+
+interface TabuleirosJogador {
+  dePosicionamento: TabuleiroPosicionamento;
+  deAtaque: TabuleiroAtaque;
 }
 
-export class Jogo {
-  private tabuleiros: Tabuleiro[];
-  private naviosPosicionados: number[];
-  private bloqueio: boolean;
-  private jogadorAtual: number;
-  private totalNavios: number;
+export class Game {
+  private tabuleiros: TabuleirosJogador[];
   private fase: Fase;
+  private naviosPosicionados: number[];
+  private totalNavios: number;
+  private turnoAtual: number;
 
-  constructor(tamanho: number) {
-    this.tabuleiros = [new Tabuleiro(tamanho), new Tabuleiro(tamanho)];
-    this.naviosPosicionados = [0, 0];
-    this.bloqueio = false;
-    this.jogadorAtual = 0;
-    this.totalNavios = 5;
+  constructor(tamanho: number, totalNavios: number) {
+    this.tabuleiros = [
+      {
+        dePosicionamento: new TabuleiroPosicionamento(tamanho),
+        deAtaque: new TabuleiroAtaque(tamanho),
+      },
+      {
+        dePosicionamento: new TabuleiroPosicionamento(tamanho),
+        deAtaque: new TabuleiroAtaque(tamanho),
+      },
+    ];
     this.fase = Fase.Posicionamento;
+    this.naviosPosicionados = [0, 0];
+    this.totalNavios = totalNavios;
+    this.turnoAtual = 0;
   }
 
-  public iniciar(): void {
-    console.log('Jogo iniciado!');
-    this.exibirTabuleiros();
+  public getTurnoAtual(): number {
+    return this.turnoAtual;
   }
 
-  private exibirTabuleiros(): void {
-    this.tabuleiros.forEach((tabuleiro, index) => {
-      console.log(`Tabuleiro do Jogador ${index + 1}:`);
-      tabuleiro.exibir();
-    });
+  public setTurnoAtual(turno: number): void {
+    this.turnoAtual = turno;
   }
 
-  public exibirTabuleiro(jogadorId: number): void {
-    console.log(`Tabuleiro do Jogador ${jogadorId + 1}:`);
-    this.tabuleiros[jogadorId].exibir();
+  public alternarTurno(): void {
+    this.turnoAtual = this.turnoAtual === 0 ? 1 : 0;
   }
 
-  public getTabuleiro(jogadorId: number): Tabuleiro {
-    return this.tabuleiros[jogadorId];
+  public getFase(): Fase {
+    return this.fase;
+  }
+
+  public setFase(fase: Fase): void {
+    this.fase = fase;
+  }
+
+  public getPosicoesAtingidasDosJogadores(): {
+    player1: { playerId: number; posicoesAtingidas: number };
+    player2: { playerId: number; posicoesAtingidas: number };
+  } {
+    return {
+      player1: { playerId: 0, posicoesAtingidas: this.tabuleiros[0].dePosicionamento.getPositionAtingidas() },
+      player2: { playerId: 1, posicoesAtingidas: this.tabuleiros[1].dePosicionamento.getPositionAtingidas() },
+    };
+  }
+
+  public getPosicoesTotaisDosJogadores(): {
+    player1: { playerId: number; posicoesTotais: number };
+    player2: { playerId: number; posicoesTotais: number };
+  } {
+    return {
+      player1: { playerId: 0, posicoesTotais: this.tabuleiros[0].dePosicionamento.getPosicoesTotais() },
+      player2: { playerId: 1, posicoesTotais: this.tabuleiros[1].dePosicionamento.getPosicoesTotais() },
+    };
+  }
+
+  public getGrade(jogador: number): {
+    ataque: string[][];
+    posicionamento: string[][];
+  } {
+    if (jogador !== 0 && jogador !== 1) {
+      throw new Error('Jogador inválido. Deve ser 0 ou 1.');
+    }
+
+    return {
+      posicionamento: this.tabuleiros[jogador].dePosicionamento.getGrade(),
+      ataque: this.tabuleiros[jogador].deAtaque.getGrade(),
+    };
+  }
+
+  private verificarTodosNaviosPosicionados(): void {
+    for (let i = 0; i < this.naviosPosicionados.length; i++) {
+      if (this.naviosPosicionados[i] < this.totalNavios) {
+        return;
+      }
+    }
+    this.fase = Fase.Ataque;
+  }
+
+  public getTodosDoJogadorPosicionados(jogadorId: number): boolean {
+    if (jogadorId !== 0 && jogadorId !== 1) {
+      throw new Error('Jogador inválido. Deve ser 0 ou 1.');
+    }
+    return this.naviosPosicionados[jogadorId] === this.totalNavios;
   }
 
   public posicionarNavio(
-    jogadorId: number,
+    jogador: number,
     inicio: Coordenada,
     comprimento: number,
     direcao: Direcao,
   ): {
     sucesso: boolean;
-    coordenadas?: Coordenada[];
-    tabuleiro: string[][];
     mensagem?: string;
+    coordenadas?: Coordenada[];
+    tabuleiro?: {
+      ataque: string[][];
+      posicionamento: string[][];
+    };
   } {
     if (this.fase !== Fase.Posicionamento) {
       return {
         sucesso: false,
-        tabuleiro: this.tabuleiros[jogadorId].getGrade(),
-        mensagem: 'Ainda estamos na fase de posicionamento.',
+        mensagem: 'Não estamos na fase de posicionamento.',
       };
     }
 
-    this.tabuleiros[jogadorId].exibir();
-
-    if (this.naviosPosicionados[jogadorId] === this.totalNavios) {
+    if (this.naviosPosicionados[jogador] >= this.totalNavios) {
       return {
         sucesso: false,
-        tabuleiro: this.tabuleiros[jogadorId].getGrade(),
         mensagem: 'Todos os seus navios já foram posicionados.',
       };
     }
 
-    const resultado = this.tabuleiros[jogadorId].posicionarNavio(
-      inicio,
-      comprimento,
-      direcao,
-    );
+    const resultado = this.tabuleiros[jogador].dePosicionamento.posicionarNavio(inicio, comprimento, direcao);
 
-    if (resultado.sucesso) {
-      console.log(
-        `Jogador ${jogadorId + 1} posicionou navio, total: ${this.naviosPosicionados[jogadorId] + 1}`,
-      );
-      this.naviosPosicionados[jogadorId] += 1;
+    if (jogador !== 0 && jogador !== 1) {
+      return { sucesso: false, mensagem: 'Jogador inválido. Deve ser 0 ou 1.' };
     }
 
-    if (this.todosNaviosPosicionados()) {
-      console.log(
-        'Todos os navios foram posicionados, vamos para a fase de ataque!',
-      );
-      this.fase = Fase.Ataque;
+    if (resultado.sucesso) {
+      this.naviosPosicionados[jogador]++;
+      this.verificarTodosNaviosPosicionados();
     }
 
     return {
       sucesso: resultado.sucesso,
+      mensagem: resultado.sucesso ? 'Navio posicionado com sucesso.' : 'Falha ao posicionar navio.',
       coordenadas: resultado.coordenadas,
-      tabuleiro: this.tabuleiros[jogadorId].getGrade(),
-      mensagem: 'Navio posicionado com sucesso!',
+      tabuleiro: this.getGrade(jogador),
     };
   }
 
-  public todosNaviosPosicionados(): boolean {
-    return (
-      this.naviosPosicionados[0] === this.totalNavios &&
-      this.naviosPosicionados[1] === this.totalNavios
-    );
-  }
-
-  public naviosPosicionadosPorJogador(jogadorId: number): boolean {
-    return this.naviosPosicionados[jogadorId] === this.totalNavios;
-  }
-
-  public atacar(
-    atacanteId: number,
+  public ataque(
+    jogador: number,
     coordenada: Coordenada,
   ): {
     sucesso: boolean;
-    coordenada: Coordenada;
-    tabuleiro: string[][];
+    acerto?: boolean;
     mensagem?: string;
+    coordenada?: Coordenada;
+    tabuleiro?: { ataque: string[][]; posicionamento: string[][] };
   } {
+    if (jogador !== 0 && jogador !== 1) {
+      return { sucesso: false, mensagem: 'Jogador inválido. Deve ser 0 ou 1.' };
+    }
+
     if (this.fase !== Fase.Ataque) {
-      return {
-        sucesso: false,
-        coordenada,
-        tabuleiro: this.tabuleiros[atacanteId].getGrade(),
-        mensagem: 'Ainda estamos na fase de posicionamento.',
-      };
+      return { sucesso: false, mensagem: 'Não estamos na fase de ataque.' };
     }
 
-    if (this.bloqueio) {
-      return {
-        sucesso: false,
-        coordenada,
-        tabuleiro: this.tabuleiros[atacanteId].getGrade(),
-        mensagem: 'Outro jogador está atacando. Por favor, aguarde.',
-      };
-    }
-
-    if (atacanteId !== this.jogadorAtual) {
-      return {
-        sucesso: false,
-        coordenada,
-        tabuleiro: this.tabuleiros[atacanteId].getGrade(),
-        mensagem: 'Não é sua vez de atacar.',
-      };
-    }
-
-    this.bloqueio = true;
-
-    if (!this.todosNaviosPosicionados()) {
-      console.log('Todos os navios precisam ser posicionados!');
-      this.bloqueio = false;
-      return {
-        sucesso: false,
-        coordenada,
-        tabuleiro: this.tabuleiros[atacanteId].getGrade(),
-        mensagem:
-          'Todos os jogadores precisam estar com os navis posicionados!',
-      };
-    }
-
-    const oponenteId = (atacanteId + 1) % 2;
-    const acerto = this.tabuleiros[oponenteId].receberAtaque(coordenada);
-    console.log(
-      `Jogador ${atacanteId + 1} atacou ${coordenada.x}, ${coordenada.y} e ${acerto ? 'acertou' : 'errou'}`,
-    );
-
-    this.jogadorAtual = oponenteId;
-
+    const oponente = jogador === 1 ? 0 : 1;
+    const acerto = this.tabuleiros[oponente].dePosicionamento.receberAtaque(coordenada);
     if (acerto) {
-      this.tabuleiros[atacanteId].marcarAcerto(coordenada);
-      this.jogadorAtual = atacanteId;
-
-      if (this.tabuleiros[oponenteId].todosNaviosDestruidos()) {
-        this.fase = Fase.FimDeJogo;
-        console.log(`Jogador ${atacanteId + 1} venceu o jogo!`);
-        return {
-          sucesso: true,
-          coordenada,
-          tabuleiro: this.tabuleiros[atacanteId].getGrade(),
-          mensagem: 'Fim de jogo! Você venceu!',
-        };
-      }
+      this.tabuleiros[jogador].deAtaque.marcarAcerto(coordenada);
+    } else {
+      this.tabuleiros[jogador].deAtaque.marcarErro(coordenada);
     }
 
-    this.bloqueio = false;
+    const naviosRestantes = this.tabuleiros[oponente].dePosicionamento.getNaviosRestantes();
+    const acabou =
+      this.tabuleiros[oponente].dePosicionamento.getPosicoesTotais() -
+      this.tabuleiros[oponente].dePosicionamento.getPositionAtingidas();
 
-    this.exibirTabuleiros();
+    if (acabou === 0) {
+      console.log('acabou');
+      this.fase = Fase.Fim;
+      return {
+        sucesso: true,
+        acerto,
+        coordenada,
+        mensagem: `Jogador ${jogador === 1 ? 1 : 0} venceu!`,
+        tabuleiro: this.getGrade(jogador),
+      };
+    }
+
+    if (naviosRestantes === 0) {
+      this.fase = Fase.Fim;
+      return {
+        sucesso: true,
+        acerto,
+        coordenada,
+        mensagem: `Jogador ${jogador === 1 ? 1 : 0} venceu!`,
+        tabuleiro: this.getGrade(jogador),
+      };
+    }
 
     return {
-      sucesso: acerto,
+      sucesso: true,
+      acerto,
       coordenada,
-      tabuleiro: this.tabuleiros[atacanteId].getGrade(),
       mensagem: acerto ? 'Acertou!' : 'Errou!',
+      tabuleiro: this.getGrade(jogador),
     };
   }
 
-  public getEstado() {
-    return this.tabuleiros.map((tabuleiro, index) => ({
-      jogador: index,
-      tabuleiro: tabuleiro.getGrade(),
-    }));
-  }
-
-  public getFase(): Fase {
-    return this.fase;
+  public exibirTabuleiros(jogador: number): void {
+    console.log(`Tabuleiro de Posicionamento do Jogador ${jogador + 1}:`);
+    this.tabuleiros[jogador].dePosicionamento.exibir('Posicionamento');
+    console.log(`Tabuleiro de Ataque do Jogador ${jogador + 1}:`);
+    this.tabuleiros[jogador].deAtaque.exibir('Ataque');
   }
 }

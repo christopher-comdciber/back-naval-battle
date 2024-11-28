@@ -18,7 +18,7 @@
 			"semicolons": "always",
 			"bracketSameLine": false,
 			"bracketSpacing": true,
-			"lineWidth": 80,
+			"lineWidth": 130,
 			"lineEnding": "lf"
 		}
 	}
