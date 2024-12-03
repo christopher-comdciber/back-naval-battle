@@ -1,6 +1,11 @@
 # Projeto de Batalha Naval
 
 Este projeto implementa um jogo de Batalha Naval utilizando TypeScript, Node.js, e WebSockets. Abaixo está uma descrição detalhada de cada arquivo, suas funções principais e como eles se interligam.
+- Utilizamos a tática "dividir para conquistar", pois por ser um projeto com muita lógica necessária, precisamos dividir em "escopos" e "funcionalidades" para que fosse possível o desenvolvimento.
+
+- Em suma, criamos primeiro a lógica do tabuleiro, onde existem tabuleiros de posicionamento e de ataque, cada um com sua lógica, mas todos com um comportamento em comum: tem um tamanho, são um array bidimensional, possuem métodos para ver se uma coordenada é válida e por fim, um método para retornar a o array própriamente dito.
+- Depois, criamos o arquivo `game.ts`, que é responsável pela lógica do jogo, ou seja, a definição do tipo TabuleirosJogador (onde cada jogador tem um tabuleiro de posicionamento e um ataque), a definição das fases, os naviosPosicionados, o total de navios do jogo, como também o turno do jogo (vez de quem jogar).
+- E por fim, o socket.ts que faz a leitura do game.ts e utiliza WebSockets (utilizamos o Socket.IO pela maior facilidade), para permitir um game multiplayer.
 
 ## Estrutura do Projeto
 ```
@@ -140,7 +145,6 @@ Coordenada é um tipo que representa um ponto no tabuleiro com propriedades x e 
   - Verificado em métodos como `verificarNavioDestruido` para determinar se um navio foi completamente atingido.
 - **Fase**:
   - Utilizada para controlar o fluxo do jogo, determinando se os jogadores estão na fase de posicionamento, ataque ou se o jogo terminou.
-
 
 ## Funções Principais e Interligações
 
