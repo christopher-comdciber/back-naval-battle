@@ -2,6 +2,7 @@ import { Game } from './game';
 import { Fase, type Coordenada, type Direcao } from './types';
 import { Server } from 'socket.io';
 import http from 'node:http';
+import type { Memento } from './memento';
 
 const port = 3001;
 
