@@ -20,10 +20,10 @@ let memento: Memento | null = null;
 io.on('connection', (socket) => {
   console.log('Novo cliente conectado:', socket.id);
 
-  if (memento) {
-    console.log("memento teste")
-    socket.emit('estadoAtual', memento);
-  }
+  // if (memento) {
+  //   console.log("memento teste")
+  //   socket.emit('estadoAtual', memento);
+  // }
 
   socket.on('posicionarNavio', (data) => {
     const { playerId, inicio, comprimento, direcao } = data;
@@ -74,8 +74,8 @@ io.on('connection', (socket) => {
     socket.emit('ataqueResultado', resultado);
 
     if (game.getFase() === Fase.Fim) {
-      io.emit('fimDeJogo', { fase: game.getFase(), vencedor: playerId });
       game.reiniciar(10);
+      io.emit('fimDeJogo', { fase: game.getFase(), vencedor: playerId });
     }
 
     const adversarioId = playerId === 1 ? 0 : 1;
@@ -116,15 +116,15 @@ io.on('connection', (socket) => {
   });
 });
 
-server.on('restaurarEstado', () => {
-  console.log("Teste de restaurar memento")
-    if (memento) {
-      game.restaurarMemento(memento);
-      server.emit('estadoRestaurado', { sucesso: true });
-    } else {
-      server.emit('estadoRestaurado', { sucesso: false, mensagem: 'Nenhum estado salvo encontrado.' });
-    }
-  });
+// server.on('restaurarEstado', () => {
+//   console.log("Teste de restaurar memento")
+//     if (memento) {
+//       game.restaurarMemento(memento);
+//       server.emit('estadoRestaurado', { sucesso: true });
+//     } else {
+//       server.emit('estadoRestaurado', { sucesso: false, mensagem: 'Nenhum estado salvo encontrado.' });
+//     }
+//   });
 
 server.listen(port, () => {
   console.log(`Servidor ouvindo na porta ${port}`);

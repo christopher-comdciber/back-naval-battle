@@ -25,39 +25,28 @@ tsconfig.json
 ```
 
 ## Descrição dos Arquivos
-
-### `biome.json`
-Configurações do Biome, um linter e formatador de código.
-
-### `package.json`
-Arquivo de configuração do npm, contendo as dependências do projeto e scripts de build e desenvolvimento.
-
-### `tsconfig.json`
-Configurações do compilador TypeScript.
-
-### `src/board.ts`
-Define a classe base `Board` que representa um tabuleiro genérico. Contém métodos para validar coordenadas, obter a grade do tabuleiro e exibir o tabuleiro no console.
-
-### `src/board-ataque.ts`
-Define a classe `TabuleiroAtaque` que estende `Board`. Adiciona métodos específicos para marcar acertos e erros no tabuleiro de ataque.
-
-### `src/board-posicionamento.ts`
-Define a classe `TabuleiroPosicionamento` que estende `Board`. Adiciona métodos para posicionar navios, receber ataques e verificar se um navio foi destruído.
-
-### `src/client.ts`
-Simula um cliente que se conecta ao servidor e realiza ações como posicionar navios e atacar.
-
-### `src/game.ts`
-Define a classe `Game` que gerencia o estado do jogo, incluindo os tabuleiros dos jogadores, a fase do jogo, e o turno atual. Contém métodos para posicionar navios, realizar ataques, alternar turnos, e criar/restaurar mementos.
-
-### `src/memento.ts`
-Implementa o padrão Memento para salvar e restaurar o estado do jogo.
-
-### `src/socket.ts`
-Configura o servidor WebSocket utilizando `socket.io`. Gerencia a comunicação em tempo real entre o servidor e os clientes, incluindo eventos para posicionar navios, realizar ataques, e obter o estado atual do jogo.
-
-### `src/types.ts`
-Define tipos e enums utilizados no projeto, como `Coordenada`, `Direcao`, `Navio`, e `Fase`.
+- `src/board.ts`:
+  - Define a classe base `Board` que representa um tabuleiro genérico. Contém métodos para validar coordenadas, obter a grade do tabuleiro e exibir o tabuleiro no console.
+- `src/board-ataque.ts`:
+  - Define a classe `TabuleiroAtaque` que estende `Board`. Adiciona métodos específicos para marcar acertos e erros no tabuleiro de ataque.
+- `src/board-posicionamento.ts`
+  - Define a classe `TabuleiroPosicionamento` que estende `Board`. Adiciona métodos para posicionar navios, receber ataques e verificar se um navio foi destruído.
+- `src/client.ts`:
+  - Simula um cliente que se conecta ao servidor e realiza ações como posicionar navios e atacar.
+- `src/game.ts`:
+  - Define a classe `Game` que gerencia o estado do jogo, incluindo os tabuleiros dos jogadores, a fase do jogo, e o turno atual. Contém métodos para posicionar navios, realizar ataques, alternar turnos, e criar/restaurar mementos.
+- `src/memento.ts`:
+  - Implementa o padrão Memento para salvar e restaurar o estado do jogo.
+- `src/socket.ts`:
+  - Configura o servidor WebSocket utilizando `socket.io`. Gerencia a comunicação em tempo real entre o servidor e os clientes, incluindo eventos para posicionar navios, realizar ataques, e obter o estado atual do jogo.
+- `src/types.ts`:
+  - Define tipos e enums utilizados no projeto, como `Coordenada`, `Direcao`, `Navio`, e `Fase`.
+- `biome.json`:
+  - Configurações do Biome, um linter e formatador de código.
+- `package.json`:
+  - Arquivo de configuração do npm, contendo as dependências do projeto e scripts de build e desenvolvimento.
+- `tsconfig.json`:
+  - Configurações do compilador TypeScript.
 
 ## Interligação dos Arquivos
 
