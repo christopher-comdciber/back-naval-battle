@@ -1,4 +1,4 @@
-class Memento {
+export class Memento {
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   private state: any;
 

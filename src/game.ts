@@ -2,6 +2,7 @@ import { TabuleiroPosicionamento } from './board-posicionamento';
 import { TabuleiroAtaque } from './board-ataque';
 import type { Coordenada, Direcao } from './types';
 import { Fase } from './types';
+import { Memento } from './memento';
 
 // deixar parametro como 0 ou 1
 // controlar a vez de quem jogar
@@ -35,6 +36,27 @@ export class Game {
     this.turnoAtual = 0;
   }
 
+  public criarMemento(): Memento {
+    const estado = {
+      tabuleiros: this.tabuleiros,
+      fase: this.fase,
+      naviosPosicionados: this.naviosPosicionados,
+      totalNavios: this.totalNavios,
+      turnoAtual: this.turnoAtual,
+    };
+    return new Memento(estado);
+  }
+
+  public restaurarMemento(memento: Memento): void {
+    const estado = memento.getState();
+    console.log("Teste de restaurar memento", estado.tabuleiros)
+    this.tabuleiros = estado.tabuleiros;
+    this.fase = estado.fase;
+    this.naviosPosicionados = estado.naviosPosicionados;
+    this.totalNavios = estado.totalNavios;
+    this.turnoAtual = estado.turnoAtual;
+  }
+
   public getTurnoAtual(): number {
     return this.turnoAtual;
   }
@@ -55,23 +77,33 @@ export class Game {
     this.fase = fase;
   }
 
+  public getPontuacao(): { posicoesAtingidas: number; posicoesTotais: number }[] {
+    return this.tabuleiros.map((tabuleiro, index) => {
+      const adversarioIndex = index === 0 ? 1 : 0;
+      return {
+        posicoesAtingidas: this.tabuleiros[adversarioIndex].dePosicionamento.getPositionAtingidas(),
+        posicoesTotais: tabuleiro.dePosicionamento.getPosicoesTotais(),
+      };
+    });
+  }
+
   public getPosicoesAtingidasDosJogadores(): {
+    player0: { playerId: number; posicoesAtingidasPeloInimigo: number };
     player1: { playerId: number; posicoesAtingidas: number };
-    player2: { playerId: number; posicoesAtingidas: number };
   } {
     return {
-      player1: { playerId: 0, posicoesAtingidas: this.tabuleiros[0].dePosicionamento.getPositionAtingidas() },
-      player2: { playerId: 1, posicoesAtingidas: this.tabuleiros[1].dePosicionamento.getPositionAtingidas() },
+      player0: { playerId: 0, posicoesAtingidasPeloInimigo: this.tabuleiros[0].dePosicionamento.getPositionAtingidas() },
+      player1: { playerId: 1, posicoesAtingidas: this.tabuleiros[1].dePosicionamento.getPositionAtingidas() },
     };
   }
 
   public getPosicoesTotaisDosJogadores(): {
+    player0: { playerId: number; posicoesTotais: number };
     player1: { playerId: number; posicoesTotais: number };
-    player2: { playerId: number; posicoesTotais: number };
   } {
     return {
-      player1: { playerId: 0, posicoesTotais: this.tabuleiros[0].dePosicionamento.getPosicoesTotais() },
-      player2: { playerId: 1, posicoesTotais: this.tabuleiros[1].dePosicionamento.getPosicoesTotais() },
+      player0: { playerId: 0, posicoesTotais: this.tabuleiros[0].dePosicionamento.getPosicoesTotais() },
+      player1: { playerId: 1, posicoesTotais: this.tabuleiros[1].dePosicionamento.getPosicoesTotais() },
     };
   }
 
@@ -87,6 +119,22 @@ export class Game {
       posicionamento: this.tabuleiros[jogador].dePosicionamento.getGrade(),
       ataque: this.tabuleiros[jogador].deAtaque.getGrade(),
     };
+  }
+
+  public reiniciar(tamanho: number): void {
+    this.tabuleiros = [
+      {
+        dePosicionamento: new TabuleiroPosicionamento(tamanho),
+        deAtaque: new TabuleiroAtaque(tamanho),
+      },
+      {
+        dePosicionamento: new TabuleiroPosicionamento(tamanho),
+        deAtaque: new TabuleiroAtaque(tamanho),
+      },
+    ];
+    this.fase = Fase.Posicionamento;
+    this.naviosPosicionados = [0, 0];
+    this.turnoAtual = 0;
   }
 
   private verificarTodosNaviosPosicionados(): void {
@@ -207,7 +255,7 @@ export class Game {
     }
 
     return {
-      sucesso: true,
+      sucesso: acerto,
       acerto,
       coordenada,
       mensagem: acerto ? 'Acertou!' : 'Errou!',

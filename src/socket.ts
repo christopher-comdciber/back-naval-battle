@@ -14,13 +14,21 @@ const io = new Server(server, {
 
 const game = new Game(10, 5);
 let primeiroJogadorPosicionou: number | null = null;
+let memento: Memento | null = null;
 
 io.on('connection', (socket) => {
   console.log('Novo cliente conectado:', socket.id);
 
+  if (memento) {
+    console.log("memento teste")
+    socket.emit('estadoAtual', memento);
+  }
+
   socket.on('posicionarNavio', (data) => {
     const { playerId, inicio, comprimento, direcao } = data;
     const todosPosicionadosJogador = game.getTodosDoJogadorPosicionados(playerId);
+    
+    memento = game.criarMemento();
 
     if (todosPosicionadosJogador) {
       console.log('passou no if');
@@ -66,6 +74,7 @@ io.on('connection', (socket) => {
 
     if (game.getFase() === Fase.Fim) {
       io.emit('fimDeJogo', { fase: game.getFase(), vencedor: playerId });
+      game.reiniciar(10);
     }
 
     const adversarioId = playerId === 1 ? 0 : 1;
@@ -76,18 +85,15 @@ io.on('connection', (socket) => {
       posicionamento: tabuleiro.posicionamento.map((row) => row.map((cell) => (cell === 'N' ? '~' : cell))),
     };
 
-    io.emit('ataqueRecebido', { tabuleiro: tabuleiroTransformado, playerId });
+    io.emit('ataqueRecebido', { tabuleiro: tabuleiroTransformado, playerId, sucesso: resultado.sucesso, coordenada: resultado.coordenada });
 
     if (!resultado.acerto) {
       game.alternarTurno();
       io.emit('turnoAlterado', { turnoAtual: game.getTurnoAtual() });
     }
 
-    const posicoesAtingidas = game.getPosicoesAtingidasDosJogadores();
-    const posicoesTotais = game.getPosicoesTotaisDosJogadores();
-    console.log('Posições atingidas', posicoesAtingidas);
-    console.log('Posições totais', posicoesTotais);
-    socket.emit('pontuacao', { posicoesAtingidas, posicoesTotais });
+    const pontuacao = game.getPontuacao();
+    socket.emit('pontuacao', pontuacao);
   });
 
   socket.on('getTabuleiro', (playerId) => {
@@ -108,6 +114,16 @@ io.on('connection', (socket) => {
     console.log('Cliente desconectado:', socket.id);
   });
 });
+
+server.on('restaurarEstado', () => {
+  console.log("Teste de restaurar memento")
+    if (memento) {
+      game.restaurarMemento(memento);
+      server.emit('estadoRestaurado', { sucesso: true });
+    } else {
+      server.emit('estadoRestaurado', { sucesso: false, mensagem: 'Nenhum estado salvo encontrado.' });
+    }
+  });
 
 server.listen(port, () => {
   console.log(`Servidor ouvindo na porta ${port}`);
