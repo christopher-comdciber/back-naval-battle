@@ -12,7 +12,6 @@
 	"scripts": {
 		"build": "tsc",
 		"dev": "npx tsx watch src/socket.ts",
-		"http": "npx tsx watch src/server.ts",
 		"biome": "npx @biomejs/biome lint --write ./src",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},

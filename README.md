@@ -65,9 +65,6 @@ Define tipos e enums utilizados no projeto, como `Coordenada`, `Direcao`, `Navio
    - `Game` utiliza `TabuleiroPosicionamento` e `TabuleiroAtaque` para gerenciar os tabuleiros dos jogadores.
    - Contém a lógica principal do jogo, como alternar turnos, verificar o estado do jogo, e gerenciar a fase atual.
 
-3. **Cliente (`client.ts`)**:
-   - Simula ações de um jogador, como posicionar navios e realizar ataques, enviando requisições HTTP para o servidor.
-
 4. **Servidor WebSocket (`socket.ts`)**:
    - Configura o servidor WebSocket e gerencia eventos de comunicação em tempo real.
    - Utiliza a classe `Game` para manipular o estado do jogo com base nos eventos recebidos dos clientes.
@@ -78,6 +75,72 @@ Define tipos e enums utilizados no projeto, como `Coordenada`, `Direcao`, `Navio
 
 6. **Tipos (`types.ts`)**:
    - Define tipos e enums utilizados em todo o projeto para garantir a tipagem estática e evitar erros.
+1. **Coordenada**
+   ```typescript
+   export type Coordenada = {
+     x: number;
+     y: number;
+   };
+   ```
+   - **Definição Denotativa**: 
+Coordenada é um tipo que representa um ponto no tabuleiro com propriedades x e y, ambas do tipo `number`.
+   - **Uso**: Utilizado para especificar posições no tabuleiro.
+
+2. **Direcao**
+   ```typescript
+   export enum Direcao {
+     Horizontal = 'horizontal',
+     Vertical = 'vertical',
+   }
+   ```
+   - **Enumeração**: Direcao é um enum que define duas direções possíveis para posicionar navios:  Horizontal e Vertical.
+   - **Uso**: Utilizado para indicar a orientação de um navio no tabuleiro.
+
+3. **Navio**
+   ```typescript
+   export type Navio = {
+     coordenadas: Coordenada[];
+   };
+   ```
+   - **Definição Denotativa**: Navio é um tipo que representa um navio no tabuleiro, composto por um array de Coordenada.
+   - **Uso**: Utilizado para armazenar as coordenadas ocupadas por um navio.
+
+4. **Fase**
+   ```typescript
+   export enum Fase {
+     Posicionamento = 0,
+     Ataque = 1,
+     Fim = 2,
+   }
+   ```
+   - **Enumeração**: Fase é um enum que define as fases do jogo: Posicionamento, Ataque, e Fim.
+   - **Uso**: Utilizado para controlar o estado atual do jogo.
+
+### Interligação com Definições Denotativas e Enumeração
+
+- **Definições Denotativas**: 
+  - Coordenada e Navio são exemplos de definições denotativas, onde os tipos são definidos explicitamente com suas propriedades. Eles descrevem claramente o que representam no contexto do jogo.
+  - Coordenada denota um ponto no tabuleiro com x e y.
+  - Navio denota um conjunto de coordenadas que representam a posição de um navio no tabuleiro.
+
+- **Enumeração**:
+  - Direcao e Fase  são enums que enumeram valores possíveis para direções e fases do jogo, respectivamente.
+  - Direcao enumera as possíveis orientações de um navio (Horizontal e Vertical).
+  - Fase enumera os estados do jogo (Posicionamento, Ataque, Fim).
+
+### Como se Interligam
+
+- **Coordenada**:
+  - Utilizada em Navio para definir as posições ocupadas por um navio.
+  - Utilizada em métodos como `posicionarNavio` e `receberAtaque` para especificar posições no tabuleiro.
+- **Direcao**:
+  - Utilizada em `posicionarNavio` para indicar a orientação do navio ao ser posicionado no tabuleiro.
+- **Navio**:
+  - Utilizado para armazenar e manipular as posições dos navios no tabuleiro.
+  - Verificado em métodos como `verificarNavioDestruido` para determinar se um navio foi completamente atingido.
+- **Fase**:
+  - Utilizada para controlar o fluxo do jogo, determinando se os jogadores estão na fase de posicionamento, ataque ou se o jogo terminou.
+
 
 ## Funções Principais e Interligações
 
