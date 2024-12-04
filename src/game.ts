@@ -18,6 +18,7 @@ export class Game {
   private naviosPosicionados: number[];
   private totalNavios: number;
   private turnoAtual: number;
+  private comprimentosUsados: Set<number>[];
 
   constructor(tamanho: number, totalNavios: number) {
     this.tabuleiros = [
@@ -34,6 +35,7 @@ export class Game {
     this.naviosPosicionados = [0, 0];
     this.totalNavios = totalNavios;
     this.turnoAtual = 0;
+    this.comprimentosUsados = [new Set(), new Set()];
   }
 
   public criarMemento(): Memento {
@@ -43,6 +45,7 @@ export class Game {
       naviosPosicionados: this.naviosPosicionados,
       totalNavios: this.totalNavios,
       turnoAtual: this.turnoAtual,
+      pontuacao: this.getPontuacao(),
     };
     return new Memento(estado);
   }
@@ -135,15 +138,17 @@ export class Game {
     this.fase = Fase.Posicionamento;
     this.naviosPosicionados = [0, 0];
     this.turnoAtual = 0;
+    this.comprimentosUsados = [new Set(), new Set()];
   }
 
-  private verificarTodosNaviosPosicionados(): void {
+  public verificarTodosNaviosPosicionados(): boolean {
     for (let i = 0; i < this.naviosPosicionados.length; i++) {
       if (this.naviosPosicionados[i] < this.totalNavios) {
-        return;
+        return false;
       }
     }
     this.fase = Fase.Ataque;
+    return true;
   }
 
   public getTodosDoJogadorPosicionados(jogadorId: number): boolean {
@@ -168,6 +173,7 @@ export class Game {
     };
   } {
     if (this.fase !== Fase.Posicionamento) {
+      this.fase = Fase.Ataque;
       return {
         sucesso: false,
         mensagem: 'Não estamos na fase de posicionamento.',
@@ -175,9 +181,17 @@ export class Game {
     }
 
     if (this.naviosPosicionados[jogador] >= this.totalNavios) {
+      this.fase = Fase.Ataque;
       return {
         sucesso: false,
         mensagem: 'Todos os seus navios já foram posicionados.',
+      };
+    }
+
+    if (this.comprimentosUsados[jogador].has(comprimento)) {
+      return {
+        sucesso: false,
+        mensagem: 'Você já posicionou um navio com este comprimento.',
       };
     }
 
@@ -189,6 +203,7 @@ export class Game {
 
     if (resultado.sucesso) {
       this.naviosPosicionados[jogador]++;
+      this.comprimentosUsados[jogador].add(comprimento);
       this.verificarTodosNaviosPosicionados();
     }
 

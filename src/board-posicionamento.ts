@@ -55,7 +55,12 @@ export class TabuleiroPosicionamento extends Board {
     const coordenadas = this.obterCoordenadas(inicio, comprimento, direcao);
 
     for (const coord of coordenadas) {
-      if (!this.coordenadaValida(coord) || this.grade[coord.y][coord.x] !== '~') {
+      const coordStr = `${coord.x},${coord.y}`;
+      if (
+        !this.coordenadaValida(coord)
+          ||
+        this.conjuntoNavios.has(coordStr)
+      ) {
         return { sucesso: false, coordenadas };
       }
     }
