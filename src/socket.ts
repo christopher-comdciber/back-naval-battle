@@ -90,10 +90,6 @@ io.on('connection', (socket) => {
     console.log('Resultado', resultado);
     socket.emit('ataqueResultado', resultado);
 
-    if (game.getFase() === Fase.Ataque) {
-      memento = game.criarMemento();
-    }
-
     const adversarioId = playerId === 1 ? 0 : 1;
     const tabuleiro = game.getGrade(adversarioId);
 
@@ -111,6 +107,10 @@ io.on('connection', (socket) => {
 
     const pontuacao = game.getPontuacao();
     socket.emit('pontuacao', pontuacao);
+
+    if (game.getFase() === Fase.Ataque) {
+      memento = game.criarMemento();
+    }
 
     if (game.getFase() === Fase.Fim) {
       game.reiniciar(10);
