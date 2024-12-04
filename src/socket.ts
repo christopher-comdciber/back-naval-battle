@@ -107,6 +107,8 @@ io.on('connection', (socket) => {
 
     const pontuacao = game.getPontuacao();
     socket.emit('pontuacao', pontuacao);
+    io.emit('pontuacao', pontuacao);
+
 
     if (game.getFase() === Fase.Ataque) {
       memento = game.criarMemento();
